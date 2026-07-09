@@ -1,8 +1,12 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from ModelResponse import JuradoCreate, LoginRequest
+from classes.Candidato import Candidato
 from classes.Jurados import Jurados
+from classes.Pontuacao import Pontuacao
 from db import get_db
 from jose import JWTError
 from fastapi.security import OAuth2PasswordBearer
@@ -29,6 +33,28 @@ router = APIRouter(
     prefix="/jurados",
     tags=["jurados"]
 )
+
+@router.get("/jurados/qnt_votos_jurados")
+def qnt_faltam_o_jurados_votaram(db: Session = Depends(get_db)):
+
+    todos_jurados = db.query(Jurados).all()
+    total_candidatos = len(db.query(Candidato).all())
+
+    qnt_votos_jurados = []
+    for jurado in todos_jurados:
+        # todos os votos de um jurado
+        votos = db.query(Pontuacao).filter(
+            Pontuacao.id_jurado == jurado.id
+        ).all()
+        dic = {
+            f"{jurado.nome}": len(votos),
+            f"total_participante": total_candidatos,
+
+        }
+        qnt_votos_jurados.append(dic)
+
+    return qnt_votos_jurados
+
 
 @router.post("/jurados/add")
 def create_jurado(jurado: JuradoCreate, db: Session = Depends(get_db)):
