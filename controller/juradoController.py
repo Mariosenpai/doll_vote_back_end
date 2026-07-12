@@ -14,6 +14,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from datetime import datetime, timedelta
 
+from dependencies import verificar_token
+
 SECRET_KEY = "uma-chave-bem-grande-e-secreta"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 200
@@ -33,6 +35,34 @@ router = APIRouter(
     prefix="/jurados",
     tags=["jurados"]
 )
+
+
+@router.get("/jurados/candidatos_votados")
+def all_candidatos_jurados_votados(jurado_att: Jurados = Depends(verificar_token),db: Session = Depends(get_db)):
+    candidatos = db.query(Candidato).all()
+    lista_all_candidatos_votados = []
+
+    for candidato in candidatos:
+        pontuacao_existente = db.query(Pontuacao).filter(
+            Pontuacao.id_candidato == candidato.id,
+            Pontuacao.id_jurado == jurado_att.id
+        ).first()
+
+        if pontuacao_existente:
+            votado = True
+        else:
+            votado = False
+
+        lista_all_candidatos_votados.append(
+            {
+                "nome": candidato.nome,
+                "id": candidato.id,
+                "votado": votado
+            }
+        )
+
+    return lista_all_candidatos_votados
+
 
 @router.get("/all")
 def all_jurados(db: Session = Depends(get_db)):
