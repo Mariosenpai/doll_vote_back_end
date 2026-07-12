@@ -34,6 +34,25 @@ router = APIRouter(
     tags=["jurados"]
 )
 
+@router.get("/all")
+def all_jurados(db: Session = Depends(get_db)):
+    return db.query(Jurados).all()
+
+@router.delete("/jurados/{id_jurado}/senha/{senha_delete}",)
+def deletar_jurado(id_jurado, senha_delete: str ,db: Session = Depends(get_db)):
+
+    if senha_delete == "1324":
+        jurado = db.query(Jurados).filter(
+            Jurados.id == id_jurado
+        ).first()
+
+        db.query(Pontuacao).filter(Pontuacao.id_jurado == jurado.id).delete()
+
+        db.delete(jurado)
+        db.commit()
+
+        return {"message": "Jurado removido com sucesso."}
+
 @router.get("/jurados/qnt_votos_jurados")
 def qnt_faltam_o_jurados_votaram(db: Session = Depends(get_db)):
 

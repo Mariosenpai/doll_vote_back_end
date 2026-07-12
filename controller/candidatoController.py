@@ -36,12 +36,9 @@ def delete_candidato(id_candidato: int, db: Session = Depends(get_db)):
             detail="Candidato não encontrado."
         )
 
-    pontuacao = db.query(Pontuacao).filter(
-        Pontuacao.id_candidato == id_candidato
-    ).first()
+    db.query(Pontuacao).filter(Pontuacao.id_candidato == candidato.id).delete()
 
     db.delete(candidato)
-    db.delete(pontuacao)
     db.commit()
 
     return {"message": "Candidato removido com sucesso."}
