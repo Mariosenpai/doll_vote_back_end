@@ -27,7 +27,7 @@ def add_pontuacao(
     # jurado = verificar_token(token=jurado_att)
     pontuacao_existente = db.query(Pontuacao).filter(
         Pontuacao.id_candidato == dados.id_candidato,
-        jurado_att.id == dados.id_jurado
+        Pontuacao.id_jurado == jurado_att.id
     ).first()
 
     if pontuacao_existente:
